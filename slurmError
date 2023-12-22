@@ -1,0 +1,2 @@
+/project/redditsa/redditSAModule/lib/python3.10/site-packages/praw/models/reddit/submission.py:619: UserWarning: The comments for this submission have already been fetched, so the updated comment_sort will not have any effect.
+  warn(
