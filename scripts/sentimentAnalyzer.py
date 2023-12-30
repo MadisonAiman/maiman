@@ -1,33 +1,50 @@
+#Import necessary libraries
 import nltk
 import os
+#Uncomment and run the following lines if this the first time running the code
 #nltk.download('all')
+#specify custom download directory for NLTK data
 #nltk.download('all', download_dir='/project/redditsa/')
+
+#Add custom download directory for NLTK data
 nltk.data.path.append("/project/redditsa/nltk_Data");
+#^Add custom path the NLTK data
 #nltk.download('vader_lexicon')
+
+#Import speicific modules from the NLTK library 
 from nltk.sentiment.vader import SentimentIntensityAnalyzer
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
 
-
+#initialize the VADER sentiment analyzer
 vader = SentimentIntensityAnalyzer()
 
+#Define a function to preprocess text 
 def preprocess_text(text):
     # Tokenize the text
     tokens = word_tokenize(text.lower())
+    
+    #Define list of words not to be removed during tokenization
     dontDelete=["no", "nor", "aren't", "couldn't", "didn't", "doesn't", "don't", "hasn't", "hadn't", "haven't", "isn't", "shouldn't", "wasn't", "weren't", "won't", "wouldn't"]
+    
+    #Filter out stopwards and words specified in dontDelete
     filtered_tokens = [token for token in tokens if token not in stopwords.words('english') or token in dontDelete]
+   #Lemmatize the tokens
     lemmatizer = WordNetLemmatizer()
     lemmatized_tokens = [lemmatizer.lemmatize(token) for token in filtered_tokens]
+    
+    #Join the lemmatized tokens into a processed text
     processed_text = ' '.join(lemmatized_tokens)
     return processed_text
 
-
-
+#Join the lemmatized tokens into a procssed text
 fileDirectory=""
 writeToFile=""
 tempFile=""
 trueFile=""
+
+#Specify the directory for input files
 directory = '/project/redditsa/reddit-scraping/api-results/'
 for fileName in os.listdir(directory):
     fileDirectory= os.path.join(directory, fileName) 
