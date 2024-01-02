@@ -47,15 +47,19 @@ trueFile=""
 #Specify the directory for input files
 directory = '/project/redditsa/reddit-scraping/api-results/'
 for fileName in os.listdir(directory):
+    #^Loop through each file in the specified directory 
     fileDirectory= os.path.join(directory, fileName) 
+    #construct the file paths for input and output
     writeToFile=os.path.join('/project/redditsa/reddit-scraping/sentiment-results', fileName)
     tempFile='/project/redditsa/reddit-scraping/sentiment-results/temp-results'
 #fileDirectory="/project/redditsa/reddit-scraping/api-results/WEN DFV?.md"
+    #Create dictionaries to store user comments, replies, and related info
     userComments={}
     userReplies={}
     whoRepliedToWho={}
     mostRepliedToUsers={}
 
+    #intialize variable for processing comments and replies
     firstComment=True
     firstReply=True
     replyIsMostRecent=False
@@ -78,16 +82,26 @@ for fileName in os.listdir(directory):
     totalScore=0
     tempScore=0
 
+    #open temporary file for writing
     f = open(tempFile, "w")
 
+    #open the current file for reading
     with open(fileDirectory) as file_object:
+        #iterate through each line in the file
         for currentLine in file_object:
+            #split through each line in the file
             line=currentLine.split();
+            #split the current line into a list of words
+
+            #Check if the line has more than 2 words
             if (len(line) > 2):
+                #Check if the line is a comment 
                 if (line[1]=="commented" or line[2]=="commented"):
+                    #Process the first comment
                     if (firstComment==True):
                         firstComment=False
                         user=line[0]
+                        #Handle the case of a deleted user
                         if (user=="[deleted"):
                             user="[deleted user]"
                             postTime=line[4:6]
@@ -99,20 +113,23 @@ for fileName in os.listdir(directory):
                             commentScore=line[5]
                             currentComment=line[7:]
                             replyIsMostRecent=False
+                            #Update userComments dictioary
                         if (user not in userComments):
                             userComments[user]=1
                         else:
                             userComments[user]=userComments[user]+1
                     else:
-                    
+                        #Write sentiment analysis for the previous comment
                         f.write(user + " commented on " + postTime[0] + " at " + postTime[1] + " with a score of " + replyScore + ":\n") 
                         f.write(' '.join(currentComment))
                         f.write("\n----------------------------------------------\n")
                         f.write("Sentiment analysis is as follows: \n")
                         f.write(str(vader.polarity_scores(preprocess_text(' '.join(currentComment)))) + "\n \n \n")
+                        #update total scores and counts 
                         tempScore=vader.polarity_scores(preprocess_text(' '.join(currentComment)))["compound"]
                         totalScore=tempScore+totalScore
                         totalCount=totalCount+1
+                        #update postiive, negative, and netural counts and scores
                         if (tempScore > 0):
                             totalPositives=totalPositives+1
                             totalPositiveScore=totalPositiveScore+tempScore
@@ -121,9 +138,11 @@ for fileName in os.listdir(directory):
                             totalNegativeScore=totalNegativeScore+tempScore
                         else:
                             totalNeutrals=totalNeutrals+1
+                        #Reset vaaible for the next comment
                         f.write("\n")
                         f.write("\n")
                         user=line[0]
+                        #handle the case of a deleted user
                         if (user=="[deleted"):
                             user="[deleted user]"
                             postTime=line[4:6]
@@ -139,6 +158,7 @@ for fileName in os.listdir(directory):
                             userComments[user]=1
                         else:
                             userComments[user]=userComments[user]+1
+             #Check if line is a reply
                 elif (line[1]=="replied" or line[2]=="replied"):
                     if (firstReply==False):
                         f.write(repliedUser + " replied to " + personRepliedTo + " on " + replyPostTime[0] + " at " + replyPostTime[1] + " with a score of " + replyScore + ":\n")
@@ -148,7 +168,10 @@ for fileName in os.listdir(directory):
                         f.write(str(vader.polarity_scores(preprocess_text(' '.join(currentReply)))) + "\n \n \n")
                         tempScore=vader.polarity_scores(preprocess_text(' '.join(currentReply)))["compound"]
                         totalScore=tempScore+totalScore
+                        #update total scores and counts
                         totalCount=totalCount+1
+                        #^update total scores and counts
+                        #Update postivie, neg and netural scores and counts 
                         if (tempScore > 0):
                             totalPositives=totalPositives+1
                             totalPositiveScore=totalPositiveScore+tempScore
@@ -160,6 +183,7 @@ for fileName in os.listdir(directory):
                     else:
                         firstReply=False
                     repliedUser=line[0]
+                    #update variable for the current reply
                     incrementer=0
                     if (repliedUser=="[deleted"):
                         repliedUser="[deleted user]"
